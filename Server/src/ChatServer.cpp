@@ -1,6 +1,6 @@
 /*
 Copyright (c) 2019 InversePalindrome
-Palindrome Network - ChatServer.cpp
+Palindrome Network Server - ChatServer.cpp
 http://inversepalindrome.com
 */
 
@@ -19,11 +19,11 @@ ChatServer::ChatServer(boost::asio::io_service& service, tcp::endpoint const& en
 void ChatServer::do_accept()
 {
 	acceptor.async_accept(socket,
-	[](auto const& error_code)
+	[this](auto const& error_code)
 	{
 		if (!error_code)
 		{
-			std::make_shared<ChatSession>(std::move(socket), chat_room)->start();
+			std::make_shared<ChatSession>(chat_room, std::move(socket))->start();
 		}
 
 		do_accept();

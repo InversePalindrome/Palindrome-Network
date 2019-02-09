@@ -1,6 +1,6 @@
 /*
 Copyright (c) 2019 InversePalindrome
-Palindrome Network - ChatClient.cpp
+Palindrome Network Client - ChatClient.cpp
 http://inversepalindrome.com
 */
 
@@ -18,7 +18,7 @@ ChatClient::ChatClient(boost::asio::io_service& service, tcp::resolver::iterator
 	socket(service)
 {
 	boost::asio::async_connect(socket, endpoint_iterator,
-	[](auto const& error_code, auto) 
+	[this](auto const& error_code, auto) 
 	{
 		if (!error_code)
 		{

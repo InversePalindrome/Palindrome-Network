@@ -1,6 +1,6 @@
 /*
 Copyright (c) 2019 InversePalindrome
-Palindrome Network - ChatParticipant.hpp
+Palindrome Network Server - ChatParticipant.hpp
 http://inversepalindrome.com
 */
 
