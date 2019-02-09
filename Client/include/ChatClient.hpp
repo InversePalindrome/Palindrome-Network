@@ -21,6 +21,9 @@ class ChatClient
 public:
 	ChatClient(boost::asio::io_service& service, tcp::resolver::iterator endpoint_iterator);
 
+	void write(std::string const& message);
+	void close();
+
 private:
 	boost::asio::io_service& service;
 

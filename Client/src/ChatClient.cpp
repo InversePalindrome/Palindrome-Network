@@ -22,16 +22,36 @@ ChatClient::ChatClient(boost::asio::io_service& service, tcp::resolver::iterator
 	{
 		if (!error_code)
 		{
-
+			do_read();
 		}
 	});
 }
 
+void ChatClient::write(std::string const& message)
+{
+	service.post(
+	[this, &message]()
+	{
+		auto is_writing = !empty(message_queue);
+
+		message_queue.push(message);
+
+		if (!is_writing)
+		{
+			do_write();
+		}
+	});
+}
+
+void ChatClient::close()
+{
+	service.post([this]() { socket.close(); });
+}
+
 void ChatClient::do_read()
 {
-	/*
-	boost::asio::async_read(socket, boost::asio::buffer(data(read_message), size(read_message)), 
-    [this](auto error_code, auto)
+	boost::asio::async_read(socket, boost::asio::buffer(data(read_message), size(read_message)),
+	[this](auto const& error_code, auto)
 	{
 		if (!error_code)
 		{
@@ -41,7 +61,7 @@ void ChatClient::do_read()
 		{
 			socket.close();
 		}
-	});*/
+	});
 }
 
 void ChatClient::do_write()

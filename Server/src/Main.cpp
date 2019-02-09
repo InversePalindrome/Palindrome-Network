@@ -5,7 +5,7 @@ http://inversepalindrome.com
 */
 
 
-#include "Server.hpp"
+#include "ChatServer.hpp"
 
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/io_service.hpp>
@@ -14,7 +14,6 @@ http://inversepalindrome.com
 
 
 using boost::asio::ip::tcp;
-
 
 const int PORT = 1234;
 
@@ -25,7 +24,7 @@ int main()
 		boost::asio::io_service service;
 		tcp::endpoint endpoint(tcp::v4(), PORT);
 
-		Server server(service, endpoint);
+		ChatServer server(service, endpoint);
 
 		service.run();
 	}
