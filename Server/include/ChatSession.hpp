@@ -8,12 +8,12 @@ http://inversepalindrome.com
 #pragma once
 
 #include "ChatRoom.hpp"
+#include "ChatMessage.hpp"
 #include "ChatParticipant.hpp"
 
 #include <boost/asio/ip/tcp.hpp>
 
-#include <queue>
-#include <string>
+#include <deque>
 #include <memory>
 
 
@@ -24,7 +24,7 @@ class ChatSession : public ChatParticipant, public std::enable_shared_from_this<
 public:
 	ChatSession(ChatRoom& chatroom, tcp::socket socket);
 
-	virtual void on_message(std::string const& message) override;
+	virtual void on_message(ChatMessage const& message) override;
 
 	void start();
 
@@ -33,9 +33,11 @@ private:
 
 	tcp::socket socket;
 
-	std::string read_message;
-	std::queue<std::string> message_queue;
+	ChatMessage read_message;
+	std::deque<ChatMessage> message_queue;
 
-	void do_read();
+	void do_read_header();
+	void do_read_body();
+
 	void do_write();
 };

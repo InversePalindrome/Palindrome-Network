@@ -7,10 +7,10 @@ http://inversepalindrome.com
 
 #pragma once
 
+#include "ChatMessage.hpp"
 #include "ChatParticipant.hpp"
 
-#include <queue>
-#include <string>
+#include <deque>
 #include <memory>
 #include <unordered_set>
 
@@ -18,14 +18,16 @@ http://inversepalindrome.com
 class ChatRoom
 {
 public:
-	void broadcast(std::string const& message);
+	ChatRoom();
+
+	void broadcast(ChatMessage const& message);
 
 	void add_participant(std::shared_ptr<ChatParticipant> participant);
 	void remove_participant(std::shared_ptr<ChatParticipant> participant);
 
 private:
-	std::queue<std::string> recent_messages;
+	std::deque<ChatMessage> recent_messages;
 	std::unordered_set<std::shared_ptr<ChatParticipant>> participants;
 
-	const std::size_t max_recent_messages = 100;
+	const std::size_t max_recent_messages;
 };

@@ -12,6 +12,8 @@ http://inversepalindrome.com
 #include <boost/asio/buffer.hpp>
 #include <boost/asio/connect.hpp>
 
+#include <iostream>
+
 
 ChatClient::ChatClient(boost::asio::io_service& service, tcp::resolver::iterator endpoint_iterator) :
 	service(service),
@@ -22,19 +24,19 @@ ChatClient::ChatClient(boost::asio::io_service& service, tcp::resolver::iterator
 	{
 		if (!error_code)
 		{
-			do_read();
+			do_read_header();
 		}
 	});
 }
 
-void ChatClient::write(std::string const& message)
+void ChatClient::write(ChatMessage const& message)
 {
 	service.post(
-	[this, &message]()
+	[this, message]()
 	{
 		auto is_writing = !empty(message_queue);
 
-		message_queue.push(message);
+		message_queue.push_back(message);
 
 		if (!is_writing)
 		{
@@ -48,14 +50,33 @@ void ChatClient::close()
 	service.post([this]() { socket.close(); });
 }
 
-void ChatClient::do_read()
+void ChatClient::do_read_header()
 {
-	boost::asio::async_read(socket, boost::asio::buffer(data(read_message), size(read_message)),
+	boost::asio::async_read(socket, boost::asio::buffer(read_message.data(), ChatMessage::header_size),
+	[this](auto const& error_code, auto)
+	{
+		if (!error_code && read_message.decode_header())
+		{
+			do_read_body();
+		}
+		else
+		{
+			socket.close();
+		}
+	});
+}
+
+void ChatClient::do_read_body()
+{
+	boost::asio::async_read(socket, boost::asio::buffer(read_message.body_data(), read_message.body_size()),
 	[this](auto const& error_code, auto)
 	{
 		if (!error_code)
 		{
-			do_read();
+			std::cout.write(read_message.body_data(), read_message.body_size());
+			std::cout << '\n';
+
+			do_read_header();
 		}
 		else
 		{
@@ -68,12 +89,12 @@ void ChatClient::do_write()
 {
 	auto const& message = message_queue.front();
 
-	boost::asio::async_write(socket, boost::asio::buffer(data(message), size(message)), 
+	boost::asio::async_write(socket, boost::asio::buffer(message.data(), message.size()), 
 	[this](auto const& error_code, auto)
 	{
 		if (!error_code)
 		{
-			message_queue.pop();
+			message_queue.pop_front();
 
 			if (!empty(message_queue))
 			{

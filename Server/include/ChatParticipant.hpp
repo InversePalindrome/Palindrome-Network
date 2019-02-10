@@ -7,7 +7,7 @@ http://inversepalindrome.com
 
 #pragma once
 
-#include <string>
+#include "ChatMessage.hpp"
 
 
 class ChatParticipant
@@ -15,5 +15,5 @@ class ChatParticipant
 public:
 	virtual ~ChatParticipant() = default;
 
-	virtual void on_message(std::string const& message) = 0;
+	virtual void on_message(ChatMessage const& message) = 0;
 };

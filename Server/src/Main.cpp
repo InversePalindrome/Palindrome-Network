@@ -10,21 +10,32 @@ http://inversepalindrome.com
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/io_service.hpp>
 
+#include <list>
 #include <iostream>
 
 
 using boost::asio::ip::tcp;
 
-const int PORT = 1234;
-
-int main()
+int main(int argc, char* argv[])
 {
 	try
 	{
-		boost::asio::io_service service;
-		tcp::endpoint endpoint(tcp::v4(), PORT);
+		if (argc < 2)
+		{
+			std::cerr << "Usage: chat_server <port> [<port> ...]\n";
+			return 1;
+		}
 
-		ChatServer server(service, endpoint);
+		boost::asio::io_service service;
+
+		std::list<ChatServer> servers;
+
+		for (int i = 1; i < argc; ++i)
+		{
+			tcp::endpoint endpoint(tcp::v4(), std::atoi(argv[i]));
+
+			servers.emplace_back(service, endpoint);
+		}
 
 		service.run();
 	}

@@ -6,6 +6,7 @@ http://inversepalindrome.com
 
 
 #include "ChatClient.hpp"
+#include "ChatMessage.hpp"
 
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/io_service.hpp>
@@ -18,15 +19,15 @@ using boost::asio::ip::tcp;
 
 int main(int argc, char* argv[])
 {
-	if (argc != 3)
-	{
-		std::cerr << "Usage: chat_client <host> <port>\n";
-
-		return 1;
-	}
-
 	try
 	{
+		if (argc != 3)
+		{
+			std::cerr << "Usage: chat_client <host> <port>\n";
+
+			return 1;
+		}
+
 		boost::asio::io_service service;
 		tcp::resolver resolver(service);
 
@@ -36,10 +37,15 @@ int main(int argc, char* argv[])
 
 		std::thread thread([&service]() { service.run(); });
 
-		std::string message;
+		char line[ChatMessage::max_body_size + 1];
 
-		while (std::getline(std::cin, message))
+		while (std::cin.getline(line, ChatMessage::max_body_size + 1))
 		{
+			ChatMessage message;
+			message.set_body_size(std::strlen(line));
+			std::memcpy(message.body_data(), line, message.body_size());
+			message.encode_header();
+
 			chat_client.write(message);
 		}
 
