@@ -15,28 +15,32 @@ http://inversepalindrome.com
 #include <iostream>
 
 
-ChatClient::ChatClient(boost::asio::io_service& service, tcp::resolver::iterator endpoint_iterator) :
+ChatClient::ChatClient(std::array<char, Protocol::MAX_NAME_SIZE> const& name, boost::asio::io_service& service, 
+	tcp::resolver::iterator endpoint_iterator) :
+	name(name),
 	service(service),
 	socket(service)
 {
+	memset(data(read_message), '\0', Protocol::MAX_MESSAGE_SIZE);
+
 	boost::asio::async_connect(socket, endpoint_iterator,
 	[this](auto const& error_code, auto) 
 	{
 		if (!error_code)
 		{
-			do_read_header();
+			do_name();
 		}
 	});
 }
 
-void ChatClient::write(ChatMessage const& message)
+void ChatClient::write(std::array<char, Protocol::MAX_MESSAGE_SIZE> const& message)
 {
 	service.post(
 	[this, message]()
 	{
-		auto is_writing = !empty(message_queue);
+		auto is_writing = !empty(write_messages);
 
-		message_queue.push_back(message);
+		write_messages.push(message);
 
 		if (!is_writing)
 		{
@@ -50,14 +54,14 @@ void ChatClient::close()
 	service.post([this]() { socket.close(); });
 }
 
-void ChatClient::do_read_header()
+void ChatClient::do_name()
 {
-	boost::asio::async_read(socket, boost::asio::buffer(read_message.data(), ChatMessage::header_size),
+	boost::asio::async_write(socket, boost::asio::buffer(name, size(name)),
 	[this](auto const& error_code, auto)
 	{
-		if (!error_code && read_message.decode_header())
+		if (!error_code)
 		{
-			do_read_body();
+			do_read();
 		}
 		else
 		{
@@ -66,17 +70,16 @@ void ChatClient::do_read_header()
 	});
 }
 
-void ChatClient::do_read_body()
+void ChatClient::do_read()
 {
-	boost::asio::async_read(socket, boost::asio::buffer(read_message.body_data(), read_message.body_size()),
+	boost::asio::async_read(socket, boost::asio::buffer(read_message, size(read_message)),
 	[this](auto const& error_code, auto)
 	{
 		if (!error_code)
 		{
-			std::cout.write(read_message.body_data(), read_message.body_size());
-			std::cout << '\n';
+			std::cout << data(read_message) << '\n';
 
-			do_read_header();
+			do_read();
 		}
 		else
 		{
@@ -87,16 +90,16 @@ void ChatClient::do_read_body()
 
 void ChatClient::do_write()
 {
-	auto const& message = message_queue.front();
+	auto const& message = write_messages.front();
 
-	boost::asio::async_write(socket, boost::asio::buffer(message.data(), message.size()), 
+	boost::asio::async_write(socket, boost::asio::buffer(message, size(message)), 
 	[this](auto const& error_code, auto)
 	{
 		if (!error_code)
 		{
-			message_queue.pop_front();
+			write_messages.pop();
 
-			if (!empty(message_queue))
+			if (!empty(write_messages))
 			{
 				do_write();
 			}

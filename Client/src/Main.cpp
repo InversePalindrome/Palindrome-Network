@@ -5,12 +5,13 @@ http://inversepalindrome.com
 */
 
 
+#include "Protocol.hpp"
 #include "ChatClient.hpp"
-#include "ChatMessage.hpp"
 
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/io_service.hpp>
 
+#include <array>
 #include <thread>
 #include <iostream>
 
@@ -21,30 +22,35 @@ int main(int argc, char* argv[])
 {
 	try
 	{
-		if (argc != 3)
+		if (argc != 4)
 		{
-			std::cerr << "Usage: chat_client <host> <port>\n";
+			std::cerr << "Usage: PalindromeNetworkClient <name> <host> <port>\n";
 
 			return 1;
 		}
 
+		std::array<char, Protocol::MAX_NAME_SIZE> name;
+		strcpy(data(name), argv[1]);
+
 		boost::asio::io_service service;
+
 		tcp::resolver resolver(service);
+		auto endpoint_iterator = resolver.resolve({ argv[2], argv[3] });
 
-		auto endpoint_iterator = resolver.resolve({ argv[1], argv[2] });
-
-		ChatClient chat_client(service, endpoint_iterator);
+		ChatClient chat_client(name, service, endpoint_iterator);
 
 		std::thread thread([&service]() { service.run(); });
 
-		char line[ChatMessage::max_body_size + 1];
+		std::array<char, Protocol::MAX_MESSAGE_SIZE> message;
 
-		while (std::cin.getline(line, ChatMessage::max_body_size + 1))
+		while (true)
 		{
-			ChatMessage message;
-			message.set_body_size(std::strlen(line));
-			std::memcpy(message.body_data(), line, message.body_size());
-			message.encode_header();
+			memset(data(message), '\0', size(message));
+
+			if (std::cin.getline(data(message), Protocol::MAX_MESSAGE_SIZE - Protocol::PADDING_SIZE - Protocol::MAX_NAME_SIZE))
+			{
+				std::cin.clear();
+			}
 
 			chat_client.write(message);
 		}

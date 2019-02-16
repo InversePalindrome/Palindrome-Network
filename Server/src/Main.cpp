@@ -22,7 +22,7 @@ int main(int argc, char* argv[])
 	{
 		if (argc < 2)
 		{
-			std::cerr << "Usage: chat_server <port> [<port> ...]\n";
+			std::cerr << "Usage: PalindromeNetworkServer <port> [<port> ...]\n";
 			return 1;
 		}
 

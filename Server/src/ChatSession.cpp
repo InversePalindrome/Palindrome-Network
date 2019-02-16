@@ -18,11 +18,11 @@ ChatSession::ChatSession(ChatRoom& chat_room, tcp::socket socket) :
 {
 }
 
-void ChatSession::on_message(ChatMessage const& message)
+void ChatSession::on_message(std::array<char, Protocol::MAX_MESSAGE_SIZE> const& message)
 {
-	auto is_writing = !empty(message_queue);
+	auto is_writing = !empty(write_messages);
 
-	message_queue.push_back(message);
+	write_messages.push(message);
 
 	if (!is_writing)
 	{
@@ -34,39 +34,42 @@ void ChatSession::start()
 {
 	chat_room.add_participant(shared_from_this());
 
-	do_read_header();
+	do_name();
 }
 
-void ChatSession::do_read_header()
+void ChatSession::do_name()
 {
 	auto self(shared_from_this());
 
-	boost::asio::async_read(socket, boost::asio::buffer(read_message.data(), ChatMessage::header_size),
+	boost::asio::async_read(socket, boost::asio::buffer(name, size(name)), 
 	[this, self](auto const& error_code, auto)
 	{
-		if (!error_code && read_message.decode_header())
+		if (strlen(data(name)) <= Protocol::MAX_MESSAGE_SIZE - 2)
 		{
-			do_read_body();
+			strcat(data(name), ": ");
 		}
 		else
 		{
-			chat_room.remove_participant(shared_from_this());
+			name[Protocol::MAX_NAME_SIZE - 2] = ':';
+			name[Protocol::MAX_NAME_SIZE - 1] = ' ';
 		}
+
+		do_read();
 	});
 }
 
-void ChatSession::do_read_body()
+void ChatSession::do_read()
 {
 	auto self(shared_from_this());
 
-	boost::asio::async_read(socket, boost::asio::buffer(read_message.body_data(), read_message.body_size()),
+	boost::asio::async_read(socket, boost::asio::buffer(read_message, size(read_message)),
 	[this, self](auto const& error_code, auto)
 	{
 		if (!error_code)
 		{
-			chat_room.broadcast(read_message);
+			chat_room.broadcast(shared_from_this(), read_message);
 
-			do_read_header();
+			do_read();
 		}
 		else
 		{
@@ -79,16 +82,16 @@ void ChatSession::do_write()
 {
 	auto self(shared_from_this());
 
-	auto const& message = message_queue.front();
+	auto const& message = write_messages.front();
 
-	boost::asio::async_write(socket, boost::asio::buffer(message.data(), message.size()),
-		[this, self](auto const& error_code, auto)
+	boost::asio::async_write(socket, boost::asio::buffer(message, size(message)),
+	[this, self](auto const& error_code, auto)
 	{
 		if (!error_code)
 		{
-			message_queue.pop_front();
+			write_messages.pop();
 
-			if (!empty(message_queue))
+			if (!empty(write_messages))
 			{
 				do_write();
 			}

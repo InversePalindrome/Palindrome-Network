@@ -7,13 +7,14 @@ http://inversepalindrome.com
 
 #pragma once
 
+#include "Protocol.hpp"
 #include "ChatClient.hpp"
-#include "ChatMessage.hpp"
 
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/io_service.hpp>
 
-#include <deque>
+#include <array>
+#include <queue>
 
 
 using boost::asio::ip::tcp;
@@ -21,9 +22,10 @@ using boost::asio::ip::tcp;
 class ChatClient
 {
 public:
-	ChatClient(boost::asio::io_service& service, tcp::resolver::iterator endpoint_iterator);
+	ChatClient(std::array<char, Protocol::MAX_NAME_SIZE> const& name, boost::asio::io_service& service, 
+		tcp::resolver::iterator endpoint_iterator);
 
-	void write(ChatMessage const& message);
+	void write(std::array<char, Protocol::MAX_MESSAGE_SIZE> const& message);
 	void close();
 
 private:
@@ -31,11 +33,11 @@ private:
 
 	tcp::socket socket;
 
-	ChatMessage read_message;
-	std::deque<ChatMessage> message_queue;
+	std::array<char, Protocol::MAX_NAME_SIZE> name;
+	std::array<char, Protocol::MAX_MESSAGE_SIZE> read_message;
+	std::queue<std::array<char, Protocol::MAX_MESSAGE_SIZE>> write_messages;
 
-	void do_read_header();
-	void do_read_body();
-
+	void do_name();
+	void do_read();
 	void do_write();
 };
