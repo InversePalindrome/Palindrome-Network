@@ -39,6 +39,5 @@ private:
 
 	void do_name();
 	void do_read();
-
 	void do_write();
 };

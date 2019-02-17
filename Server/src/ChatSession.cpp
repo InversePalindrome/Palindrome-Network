@@ -32,8 +32,6 @@ void ChatSession::on_message(std::array<char, Protocol::MAX_MESSAGE_SIZE> const&
 
 void ChatSession::start()
 {
-	chat_room.add_participant(shared_from_this());
-
 	do_name();
 }
 
@@ -44,15 +42,7 @@ void ChatSession::do_name()
 	boost::asio::async_read(socket, boost::asio::buffer(name, size(name)), 
 	[this, self](auto const& error_code, auto)
 	{
-		if (strlen(data(name)) <= Protocol::MAX_MESSAGE_SIZE - 2)
-		{
-			strcat(data(name), ": ");
-		}
-		else
-		{
-			name[Protocol::MAX_NAME_SIZE - 2] = ':';
-			name[Protocol::MAX_NAME_SIZE - 1] = ' ';
-		}
+		chat_room.add_participant(shared_from_this());
 
 		do_read();
 	});

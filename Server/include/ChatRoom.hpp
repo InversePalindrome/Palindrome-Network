@@ -31,4 +31,6 @@ private:
 	std::unordered_set<std::shared_ptr<ChatParticipant>> participants;
 
 	const std::size_t max_recent_messages;
+
+	std::array<char, Protocol::MAX_NAME_SIZE> format_name(std::array<char, Protocol::MAX_NAME_SIZE> name);
 };

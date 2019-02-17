@@ -8,11 +8,15 @@ http://inversepalindrome.com
 #include "ChatServer.hpp"
 #include "ChatSession.hpp"
 
+#include <iostream>
+
 
 ChatServer::ChatServer(boost::asio::io_service& service, tcp::endpoint const& endpoint) :
 	acceptor(service, endpoint),
 	socket(service)
 {
+	std::cout << "Server started in port " << endpoint.port() << ".\n";
+	
 	do_accept();
 }
 
