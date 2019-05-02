@@ -18,19 +18,19 @@ http://inversepalindrome.com
 class ChatRoom
 {
 public:
-	ChatRoom();
+    ChatRoom();
 
-	void broadcast(std::shared_ptr<ChatParticipant> participant, 
-		std::array<char, Protocol::MAX_MESSAGE_SIZE> const& message);
+    void broadcast(std::shared_ptr<ChatParticipant> participant,
+        std::array<char, Protocol::MAX_MESSAGE_SIZE> const& message);
 
-	void add_participant(std::shared_ptr<ChatParticipant> participant);
-	void remove_participant(std::shared_ptr<ChatParticipant> participant);
+    void add_participant(std::shared_ptr<ChatParticipant> participant);
+    void remove_participant(std::shared_ptr<ChatParticipant> participant);
 
 private:
-	std::queue<std::array<char, Protocol::MAX_MESSAGE_SIZE>> recent_messages;
-	std::unordered_set<std::shared_ptr<ChatParticipant>> participants;
+    std::queue<std::array<char, Protocol::MAX_MESSAGE_SIZE>> recent_messages;
+    std::unordered_set<std::shared_ptr<ChatParticipant>> participants;
 
-	const std::size_t max_recent_messages;
+    const std::size_t max_recent_messages;
 
-	std::array<char, Protocol::MAX_NAME_SIZE> format_name(std::array<char, Protocol::MAX_NAME_SIZE> name);
+    std::array<char, Protocol::MAX_NAME_SIZE> format_name(std::array<char, Protocol::MAX_NAME_SIZE> name);
 };

@@ -12,5 +12,5 @@ http://inversepalindrome.com
 
 namespace Utility
 {
-	std::string getTimestamp();
+    std::string getTimestamp();
 }

@@ -18,12 +18,12 @@ using boost::asio::ip::tcp;
 class ChatServer
 {
 public:
-	ChatServer(boost::asio::io_service& service, tcp::endpoint const& endpoint);
+    ChatServer(boost::asio::io_service& service, tcp::endpoint const& endpoint);
 
 private:
-	ChatRoom chat_room;
-	tcp::acceptor acceptor;
-	tcp::socket socket;
+    ChatRoom chat_room;
+    tcp::acceptor acceptor;
+    tcp::socket socket;
 
-	void do_accept();
+    void do_accept();
 };

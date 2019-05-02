@@ -14,11 +14,11 @@ http://inversepalindrome.com
 
 std::string Utility::getTimestamp()
 {
-	auto t = std::time(nullptr);
-	auto tm = *std::localtime(&t);
-	
-	std::ostringstream oStream;
-	oStream << std::put_time(&tm, "[%Y-%m-%d %H:%M:%S] ");
+    auto t = std::time(nullptr);
+    auto tm = *std::localtime(&t);
 
-	return oStream.str();
+    std::ostringstream oStream;
+    oStream << std::put_time(&tm, "[%Y-%m-%d %H:%M:%S] ");
+
+    return oStream.str();
 }
