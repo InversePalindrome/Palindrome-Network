@@ -1,6 +1,6 @@
 # Palindrome Network
-- Chat network that supports multiple chat rooms and numbers of users.
-- Time stamped communication between chat users.
+- Chat network that supports multiple chat rooms and numbers of users
+- Time stamped communication between chat users
 
 ## Client
 
